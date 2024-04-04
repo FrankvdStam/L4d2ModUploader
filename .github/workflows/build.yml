@@ -28,5 +28,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: MSIX Package
-        path: L4d2ModUploader\bin\release
+        name: L4D2ModUploader
+        path: L4d2ModUploader\bin\release\net8.0-windows
