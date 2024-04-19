@@ -13,96 +13,73 @@
         <viewModels:MainViewModel/>
     </Window.DataContext>
 
-    <DockPanel>
-        <materialDesign:ColorZone Padding="10"
-                                  materialDesign:ElevationAssist.Elevation="Dp4"
-                                  DockPanel.Dock="Top"
-                                  Mode="SecondaryDark">
+    <Grid>
+        <DockPanel>
 
-            <StackPanel 
-                HorizontalAlignment="Stretch"
-                Orientation="Horizontal">
-                <Button
-                    Command="{Binding RefreshCommand}"
-                    Style="{StaticResource MaterialDesignToolButton}"
-                    ToolTip="Refresh">
-                    <materialDesign:PackIcon 
-                        Width=" 24"
-                        Height="24"
-                        Kind="Refresh" />
-                </Button>
+            <materialDesign:ColorZone
+                    Padding="10"
+                    DockPanel.Dock="Top"
+                    Mode="SecondaryDark">
 
-                <Button
-                    Command="{Binding UploadCommand}"
-                    Style="{StaticResource MaterialDesignToolButton}"
-                    ToolTip="Upload">
-                    <materialDesign:PackIcon 
-                        Width=" 24"
-                        Height="24"
-                        Kind="FileUpload" />
-                </Button>
+                <StackPanel 
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal">
+                    <Button
+                            Command="{Binding RefreshCommand}"
+                            Style="{StaticResource MaterialDesignToolButton}"
+                            ToolTip="Refresh">
+                        <materialDesign:PackIcon 
+                                Width=" 24"
+                                Height="24"
+                                Kind="Refresh" />
+                    </Button>
 
-                <ProgressBar 
-                    MinWidth="200"
-                    Visibility="{Binding UploadProgressVisibility}"
-                    Value="{Binding ProgressValue}"
-                    Maximum="{Binding ProgressMax}"
-                    />
-            </StackPanel>
+                    <Button
+                            Command="{Binding UploadCommand}"
+                            Style="{StaticResource MaterialDesignToolButton}"
+                            ToolTip="Upload">
+                        <materialDesign:PackIcon 
+                                Width=" 24"
+                                Height="24"
+                                Kind="FileUpload" />
+                    </Button>
 
-        </materialDesign:ColorZone>
+                    <ProgressBar 
+                            MinWidth="200"
+                            Visibility="{Binding UploadProgressVisibility}"
+                            Value="{Binding ProgressValue}"
+                            Maximum="{Binding ProgressMax}"
+                            />
+                </StackPanel>
 
-        <DataGrid
-            ScrollViewer.CanContentScroll="False"
-            AutoGenerateColumns="False"
-            ItemsSource="{Binding Vpks}">
-            <DataGrid.Columns>
-                <DataGridCheckBoxColumn Binding="{Binding Checked}"/>
-                <DataGridCheckBoxColumn Binding="{Binding Uploaded}" IsReadOnly="True"/>
-                <DataGridTextColumn Binding="{Binding Title}"/>
-                <DataGridTemplateColumn>
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Image 
-                                MaxHeight="200"
-                                Source="{Binding ImagePath}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+            </materialDesign:ColorZone>
 
-<!--
-
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <ItemsControl
+            <DataGrid
+                ScrollViewer.CanContentScroll="False"
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                HeadersVisibility="None"
                 ItemsSource="{Binding Vpks}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            
-                            <CheckBox 
-                                IsChecked="{Binding Checked}"/>
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn Binding="{Binding Checked}"/>
+                    <DataGridCheckBoxColumn Binding="{Binding Uploaded}" IsReadOnly="True"/>
+                    <DataGridTextColumn Binding="{Binding Title}"/>
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Image 
+                                        MaxHeight="200"
+                                        Source="{Binding ImagePath}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
 
-                            <TextBlock
-                                Grid.Column="1"
-                                Text="{Binding Title}"/>
-
-                            <Image
-                                Grid.Column="2"
-                                MaxHeight="200"
-                                Source="{Binding ImagePath}"/>
-
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-        -->
-    </DockPanel>
+        <materialDesign:Snackbar 
+            HorizontalAlignment="Stretch"
+            x:Name="SnackbarOne"
+            MessageQueue="{Binding MessageQueue}"/>
+    </Grid>
 </Window>

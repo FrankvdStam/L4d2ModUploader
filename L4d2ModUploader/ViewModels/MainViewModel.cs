@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using L4d2ModUploader.Util;
+using MaterialDesignThemes.Wpf;
 using Newtonsoft.Json;
 using Renci.SshNet;
 using SteamWebAPI2.Interfaces;
@@ -29,13 +30,23 @@ namespace L4d2ModUploader.ViewModels
 
             RefreshCommand = new RelayCommand((o) => Refresh());
             UploadCommand = new RelayCommand(o => Upload());
+            Refresh();
+
+            Application.Current.DispatcherUnhandledException += (o, a) =>
+            {
+                a.Handled = true;
+                SnackbarMessage(a.Exception.ToString());
+            };
         }
 
         private SteamRemoteStorage _steamRemoteStorage;
 
         #region UI bindables
 
-        public ObservableCollection<VpkViewModel> Vpks { get; set; } = new ObservableCollection<VpkViewModel>();
+        public ObservableCollection<VpkViewModel> Vpks {
+            get; 
+            set; 
+        } = new ObservableCollection<VpkViewModel>();
         
         public RelayCommand RefreshCommand
         {
@@ -72,6 +83,12 @@ namespace L4d2ModUploader.ViewModels
         }
         private int _progressValue;
 
+        public SnackbarMessageQueue MessageQueue
+        {
+            get => _messageQueue;
+            set => Set(ref _messageQueue, value);
+        }
+        private SnackbarMessageQueue _messageQueue = new SnackbarMessageQueue();
         #endregion
 
         #region Logic
@@ -79,41 +96,44 @@ namespace L4d2ModUploader.ViewModels
 
         public void Refresh()
         {
-            var addonsPath = Path.Combine(Settings.Instance.SteamL4d2RootPath, @"left4dead2\addons\workshop");
-
-            var files = Directory.GetFiles(addonsPath, "*.vpk");
-            var ids = files.Select(i => ulong.Parse(new FileInfo(i).Name.Replace(".vpk", string.Empty))).ToList();
-            var results = Task.Run(() => _steamRemoteStorage.GetPublishedFileDetailsAsync((uint)ids.Count, ids)).Result;
-
-            //Read vpk's from server
-            using var sshClient = new SshClient(Settings.Instance.ScpHost, 22, Settings.Instance.ScpUser, Settings.Instance.ScpPassword);
-            sshClient.Connect();
-            var result = sshClient.RunCommand($"ls {Settings.Instance.HostL4d2RootPath}/addons");
-            var uploaded = result.Result.Split("\n").Where(i => i.EndsWith(".vpk")).Select(i => ulong.Parse(i.Replace(".vpk", string.Empty))).ToList();
-
-            App.Current.Dispatcher.Invoke(() =>
+            Task.Run(() =>
             {
-                Vpks.Clear();
-            });
+                var addonsPath = Path.Combine(Settings.Instance.SteamL4d2RootPath, @"left4dead2\addons\workshop");
 
-            foreach (var id in ids)
-            {
-                var steamResult = results.Data.FirstOrDefault(i => i.PublishedFileId == id);
-                var vm = new VpkViewModel()
-                {
-                    Id = id,
-                    Uploaded = uploaded.Contains(id),
-                    FilePath = Path.Combine(addonsPath, $"{id}.vpk"),
-                    ImagePath = Path.Combine(addonsPath, $"{id}.jpg"),
-                    Title = steamResult?.Title ?? "Title not found.",
-                    Description = steamResult?.Description ?? "Description not found."
-                };
+                var files = Directory.GetFiles(addonsPath, "*.vpk");
+                var ids = files.Select(i => ulong.Parse(new FileInfo(i).Name.Replace(".vpk", string.Empty))).ToList();
+                var results = Task.Run(() => _steamRemoteStorage.GetPublishedFileDetailsAsync((uint)ids.Count, ids)).Result;
+
+                //Read vpk's from server
+                using var sshClient = new SshClient(Settings.Instance.ScpHost, 22, Settings.Instance.ScpUser, Settings.Instance.ScpPassword);
+                sshClient.Connect();
+                var result = sshClient.RunCommand($"ls {Settings.Instance.HostL4d2RootPath}/addons");
+                var uploaded = result.Result.Split("\n").Where(i => i.EndsWith(".vpk")).Select(i => ulong.Parse(i.Replace(".vpk", string.Empty))).ToList();
 
                 App.Current.Dispatcher.Invoke(() =>
                 {
-                    Vpks.Add(vm);
+                    Vpks.Clear();
                 });
-            }
+
+                foreach (var id in ids)
+                {
+                    var steamResult = results.Data.FirstOrDefault(i => i.PublishedFileId == id);
+                    var vm = new VpkViewModel()
+                    {
+                        Id = id,
+                        Uploaded = uploaded.Contains(id),
+                        FilePath = Path.Combine(addonsPath, $"{id}.vpk"),
+                        ImagePath = Path.Combine(addonsPath, $"{id}.jpg"),
+                        Title = steamResult?.Title ?? "Title not found.",
+                        Description = steamResult?.Description ?? "Description not found."
+                    };
+
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        Vpks.Add(vm);
+                    });
+                }
+            });
         }
 
 
@@ -143,6 +163,7 @@ namespace L4d2ModUploader.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    SnackbarMessage(ex.ToString());
                     Debug.WriteLine(ex);
                 }
                 finally
@@ -154,7 +175,13 @@ namespace L4d2ModUploader.ViewModels
         }
 
 
+        private void SnackbarMessage(string message)
+        {
+            MessageQueue.Enqueue(message);
+        }
+
         #endregion
+
 
 
 
