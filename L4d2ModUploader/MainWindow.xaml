@@ -63,6 +63,7 @@
                 <DataGrid.Columns>
                     <DataGridCheckBoxColumn Binding="{Binding Checked}"/>
                     <DataGridCheckBoxColumn Binding="{Binding Uploaded}" IsReadOnly="True"/>
+                    <DataGridTextColumn Binding="{Binding Id}"/>
                     <DataGridTextColumn Binding="{Binding Title}"/>
                     <DataGridTemplateColumn>
                         <DataGridTemplateColumn.CellTemplate>

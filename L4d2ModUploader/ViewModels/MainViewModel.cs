@@ -155,7 +155,7 @@ namespace L4d2ModUploader.ViewModels
 
                     foreach (var vpk in toUpload)
                     {
-                        using var stream = File.Open(vpk.FilePath, FileMode.Open);
+                        using var stream = File.Open(vpk.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                         var destinationPath = @$"{Settings.Instance.HostL4d2RootPath}/addons/{vpk.Id}.vpk";
                         scpClient.Upload(stream, destinationPath);
                         ProgressValue++;
